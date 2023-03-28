@@ -5,43 +5,40 @@
 
 	require_once "ProjectManagement.php";
 
+	$filename = $_SERVER['PHP_SELF'];
+	$result1 = substr($filename,15);
+	$result2 = substr($result1,0,-4);
+
 	$projectName = "StartTuts";
 	$projectManagement = new ProjectManagement();
 	$statusResult = $projectManagement->getAllStatus();
-	$db_handle = new DBController();
 
-	$user_data = $projectManagement->check_login();
+	$db_handle = new DBController();
+	$query = "SELECT * FROM projects WHERE project_link_id = (?) limit 1";
+	$result = $db_handle->runQuery($query, 'i', array($result2));
+
 
 	if($_SERVER['REQUEST_METHOD'] == "POST")
 	{
-		$project_name = $_POST['project_name'];
-		$project_link = $_POST['project_link'];
-		$unique = random_num(10);
-		$project_filename = "project-$unique.php";
+		$id = $_POST["user_id"];
+		$title = $_POST["title"];
+		$table_name = "tbl_task".$id;
 
-		// Path to the source file
-		$source_file = "project.php";
+		//echo $table_name;
 
-		// Read the contents of the source file
-		$file_contents = file_get_contents($source_file);
+		$query = "INSERT INTO `$table_name` (`title`, `descp`, `project_name`, `status_id`) values (?, ?, ?, ?)";
 
-		file_put_contents($project_filename, $file_contents);
+		//$desc = "yyy";
+		//$project_name = "StartTuts";
+		//$status_id = 1;
 
-		if(!empty($project_name) && !empty($project_link))
-		{
-			$query = "INSERT INTO projects (project_link_id,project_name,project_link) values (?, ?, ?)";
+		// Define the parameter types and values for the placeholders
+		//$param_type = "ssssi";
+		//$param_value_array = array($table_name, $title, "yyy", "StartTuts", 1);
 
-			// Define the parameter types and values for the placeholders
-			$param_type = "iss";
-			$param_value_array = array($unique, $project_name, $project_link);
+		// Call the insert function to execute the INSERT statement
+		$db_handle->insert($query, "sssi", array($title, "yyy", "StartTuts", 1));
 
-			// Call the insert function to execute the INSERT statement
-			$db_handle->insert($query, $param_type, $param_value_array);
-
-			// Redirect back to the form page or to a success page
-			header("Location: admin.php");
-			die;
-		}
 	}
 
 ?>
@@ -142,10 +139,20 @@
         font-size: 16px;
     }
 
+	.link-container{
+		height: 70px;
+		max-width: 300px;
+		background: yellow;
+		color: black;
+		padding: 5px;
+		border: solid 2px black;
+		font-size: 30px;
+	}
+
 
 	.flex-container {
 		display: flex;
-		gap: 300px;
+		gap: 200px;
 	}
 
 	.fixed-container {
@@ -176,50 +183,77 @@
 	hr{
 		height: 5px;
 	}
-
+    
 	</style>
+	<br><br>
 
 	<?php
 		include("admin_nav.php");
+
 	?>
+	<br>
+
+	<center><h2><u><?php echo $result[0]['project_name'] ?></u></h2></center>
+
+	<br>
+
+	<center>
+	<div class="link-container">
+		<?php echo "<a href=".$result[0]['project_link'].">Repo Link</a>" ?>
+	</div>
+	</center>
 	<br><br>
 
-	<u><center><h1>Welcome Admin!</h1></center></u>
-	<br>
 	<div class="flex-container">
 		<div class="flexible-container">
 			<br>
-			<center>Open Exisiting Project</center>
+			<center>Employees</center>
 			<hr>
 			<?php
 			
-				$query = "SELECT * FROM projects";
+				$query = "SELECT * FROM users";
 				$result = $db_handle->runBaseQuery($query);
-				echo "<table>";
+				echo "<table> <thead>
+				<tr>
+				  <th scope='col'>EMP_ID</th>
+				  <th scope='col'>EMP_NAME</th>
+				</tr>
+			  </thead>
+			  <tbody>";
+				
 				foreach($result as $row) 
 				{
-					echo "</td><td><a href='project-".$row['project_link_id'].".php'>".$row['project_name']."</a></td></tr>";
+					echo "<tr>
+					<th scope='row'>".$row['user_id']."</th>
+					<th scope='row'>".$row['user_name']."</th>
+					</tr>";
 				}
-				echo "</table>";
+				echo "</tbody></table>";
 			
 			?>
+			<br>
+			<a href="signup.php">Add new user?</a>
+			<br>
 		</div>
 		<div class="fixed-container">
-			<br>
-			<center>Create New Project</center>
+		<br>
+			<center>Assign Tasks</center>
 			<hr>
 			<form method="post">
-				<div style="font-size: 20px;margin: 10px;color: black;">Enter Project Name</div>
-				<input id="text1" type="text" name="project_name" placeholder="enter a name"><br>
-				<div style="font-size: 20px;margin: 10px;color: black;">Enter Github/Repo Link</div>
-				<input id="text1" type="text" name="project_link" placeholder="enter link"><br><br>
+				<div style="font-size: 20px;margin: 10px;color: black;">Enter Employee Id</div>
+				<input id="text1" type="text" name="user_id" placeholder="enter employee id"><br>
+				<div style="font-size: 20px;margin: 10px;color: black;">Enter task</div>
+				<input id="text1" type="text" name="title" placeholder="task"><br><br>
 
-				<input id="button" type="submit" value="Create"><br><br>
+				<input id="button" type="submit" value="Assign"><br><br>
 
 			</form>
 		</div>
 	</div>
 
-<br><br><br>
+	<br><br><br>
+
+
+
 </body>
 </html>

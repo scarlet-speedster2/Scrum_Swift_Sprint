@@ -3,7 +3,7 @@ class DBController {
 	private $host = "localhost";
 	private $user = "root";
 	private $password = "";
-	private $database = "db_project_management";
+	private $database = "scrum_db";
 	private $conn;
 	
     function __construct() {
@@ -24,8 +24,6 @@ class DBController {
         }
         return $resultset;
     }
-    
-    
     
     function runQuery($query, $param_type, $param_value_array) {
         $sql = $this->conn->prepare($query);
@@ -66,5 +64,12 @@ class DBController {
         $this->bindQueryParams($sql, $param_type, $param_value_array);
         $sql->execute();
     }
+
+    public function createTable($table_name, $columns) {
+        $query = "CREATE TABLE $table_name ($columns)";
+        $result = $this->conn->query($query);
+        return $result;
+    }
+        
 }
 ?>

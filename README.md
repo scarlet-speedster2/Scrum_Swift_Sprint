@@ -1,1 +1,0 @@
-# Scrum_Swift_Sprint
